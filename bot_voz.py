@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import requests # <--- Usamos esto para hablar con ElevenLabs
+import requests 
 import os
 import asyncio
 from dotenv import load_dotenv
@@ -9,17 +9,23 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
-VOICE_ID = os.getenv('VOICE_ID')
+VOCES_DISPONIBLES = {
+    "cio": os.getenv('VOICECIO_ID'), 
+    "yahir": os.getenv('VOICEYAHIR_ID'),
+    "lloron": os.getenv('VOICELLORON_ID')
+}
 TOKEN_DISCORD = os.getenv('DISCORD_TOKEN')
+
+voz_actual = VOCES_DISPONIBLES["cio"]
 
 # Configuración de Discord
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-def generar_audio_elevenlabs(texto):
+def generar_audio_elevenlabs(texto,voice_id):
     """Envía el texto a ElevenLabs y guarda el audio en un archivo"""
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
     
     headers = {
         "Accept": "audio/mpeg",
@@ -51,6 +57,24 @@ async def on_ready():
     print(f'Bot conectado como {bot.user}')
 
 @bot.command()
+async def voces(ctx):
+    """Muestra la lista de voces disponibles"""
+    nombres = ", ".join(VOCES_DISPONIBLES.keys())
+    await ctx.send(f"🎙️ **Voces disponibles:** {nombres}\nUsa `!cambiarvoz <nombre>` para elegir una.")
+
+@bot.command()
+async def cambiarvoz(ctx, nombre_voz: str):
+    global voz_actual
+
+    nombre_voz = nombre_voz.lower()
+
+    if nombre_voz in VOCES_DISPONIBLES:
+        voz_actual = VOCES_DISPONIBLES[nombre_voz]
+        await ctx.send(f" voz cambiada a **{nombre_voz}**")
+    else:
+        await ctx.send(f"esa voz no existe pendejo, usa !voces para ver la lista") 
+
+@bot.command()
 async def habla(ctx, *, texto: str):
     if not ctx.author.voice:
         await ctx.send("¡Entra a un canal de voz primero!")
@@ -65,7 +89,7 @@ async def habla(ctx, *, texto: str):
         await voice_client.move_to(canal_usuario)
 
 
-    exito = generar_audio_elevenlabs(texto)
+    exito = generar_audio_elevenlabs(texto,voz_actual)
 
     if exito:
         if voice_client.is_playing():
