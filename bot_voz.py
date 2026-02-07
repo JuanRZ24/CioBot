@@ -12,7 +12,8 @@ ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
 VOCES_DISPONIBLES = {
     "cio": os.getenv('VOICECIO_ID'), 
     "yahir": os.getenv('VOICEYAHIR_ID'),
-    "lloron": os.getenv('VOICELLORON_ID')
+    "lloron": os.getenv('VOICELLORON_ID'),
+    "checho" : os.getenv('VOICECHECHO_ID')
 }
 TOKEN_DISCORD = os.getenv('DISCORD_TOKEN')
 
